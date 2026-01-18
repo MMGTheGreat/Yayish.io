@@ -1,7 +1,6 @@
 {
   "name": "yayish-io",
   "version": "1.0.0",
-  "description": "Bay Area Slang Learning App - Master Yay Area vocabulary through fun games",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,13 +8,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.263.1",
-    "tone": "^14.7.77"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.454.0",
+    "tone": "^15.0.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.9",
-    "vite": "^4.5.0"
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
   }
 }
