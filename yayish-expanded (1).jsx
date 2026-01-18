@@ -236,6 +236,55 @@ class SoundManager {
 
 const soundManager = new SoundManager();
 
+// GOOGLE ADSENSE COMPONENT
+function AdBanner({ slot = "default", format = "auto", responsive = true, className = "" }) {
+  const adRef = useRef(null);
+  const [adLoaded, setAdLoaded] = useState(false);
+
+  useEffect(() => {
+    // Initialize AdSense ad
+    try {
+      if (window.adsbygoogle && adRef.current) {
+        // Push ad to AdSense
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        setAdLoaded(true);
+      }
+    } catch (error) {
+      console.error('AdSense error:', error);
+    }
+  }, []);
+
+  return (
+    <div className={`ad-banner-container my-6 ${className}`}>
+      <div className="backdrop-blur-sm rounded-2xl p-4 border border-white/10" style={{
+        background: 'rgba(15, 28, 46, 0.3)',
+        minHeight: responsive ? '100px' : 'auto'
+      }}>
+        {/* AdSense Ad Unit */}
+        <ins
+          ref={adRef}
+          className="adsbygoogle"
+          style={{ 
+            display: 'block',
+            textAlign: 'center'
+          }}
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" // 👈 REPLACE with your AdSense Publisher ID
+          data-ad-slot={slot}
+          data-ad-format={format}
+          data-full-width-responsive={responsive ? "true" : "false"}
+        />
+        
+        {/* Placeholder while ad loads - AdSense policy compliant */}
+        {!adLoaded && (
+          <div className="flex items-center justify-center py-8" style={{ color: '#4B5C7A', opacity: 0.5 }}>
+            <span className="text-sm">Advertisement</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // WORD OF THE DAY COMPONENT
 function WordOfDay() {
   const [currentWord, setCurrentWord] = useState(null);
@@ -605,7 +654,14 @@ function Crossword() {
       setIsComplete(true);
       setShowCelebration(true);
       soundManager.playSuccess();
-      setTimeout(() => setShowCelebration(false), 3000);
+      
+      // Count total clues for stats
+      const totalClues = puzzle.words.length;
+      const revealedCount = revealedClues.size;
+      const solvedCount = totalClues - revealedCount;
+      
+      // Show celebration with stats
+      setTimeout(() => setShowCelebration(false), 5000); // Longer celebration
     }
   };
 
@@ -676,19 +732,70 @@ function Crossword() {
         </p>
       </div>
 
-      {/* Celebration Banner */}
+      {/* Enhanced Celebration Banner */}
       {showCelebration && (
-        <div className="backdrop-blur-xl rounded-2xl p-6 mb-6 text-center shadow-2xl border-2 animate-bounce" style={{
-          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.3) 100%)',
-          borderColor: 'rgba(34, 197, 94, 0.5)'
+        <div className="backdrop-blur-xl rounded-3xl p-8 mb-6 text-center shadow-2xl border-4 animate-bounce relative overflow-hidden" style={{
+          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.4) 0%, rgba(16, 185, 129, 0.4) 50%, rgba(6, 182, 212, 0.4) 100%)',
+          borderColor: 'rgba(34, 197, 94, 0.7)',
+          animation: 'bounce 0.5s ease-in-out 3'
         }}>
-          <div className="flex items-center justify-center gap-3">
-            <Trophy className="w-8 h-8 text-yellow-300" />
-            <h3 className="text-3xl font-bold text-white">Congratulations! Puzzle Complete! 🎉</h3>
-            <Trophy className="w-8 h-8 text-yellow-300" />
+          {/* Confetti Animation Effect */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute animate-ping"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: ['#FFD1B3', '#FF7A32', '#FF9A5A', '#4B5C7A'][i % 4],
+                  animationDuration: `${1 + Math.random()}s`,
+                  animationDelay: `${Math.random() * 0.5}s`
+                }}
+              />
+            ))}
+          </div>
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Trophy className="w-12 h-12 text-yellow-300 animate-bounce" />
+              <h3 className="text-4xl font-black text-white drop-shadow-lg">
+                Hella Tight! Puzzle Complete! 🎉
+              </h3>
+              <Trophy className="w-12 h-12 text-yellow-300 animate-bounce" />
+            </div>
+            
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-6 mt-4">
+              <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                <div className="text-2xl font-bold text-white">{puzzle.words.length}</div>
+                <div className="text-sm text-white/80">Words</div>
+              </div>
+              <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                <div className="text-2xl font-bold text-white">{puzzle.words.length - revealedClues.size}</div>
+                <div className="text-sm text-white/80">Solved Solo</div>
+              </div>
+              {revealedClues.size > 0 && (
+                <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                  <div className="text-2xl font-bold text-yellow-300">{revealedClues.size}</div>
+                  <div className="text-sm text-white/80">Hints Used</div>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-xl font-bold text-white mt-4 drop-shadow">
+              You're speaking Bay Area like a true local! 💯
+            </p>
           </div>
         </div>
       )}
+
+      {/* Ad Placement - After Crossword Completion */}
+      {isComplete && <AdBanner slot="crossword-completion" className="animate-fadeIn" />}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Crossword Grid */}
@@ -1024,19 +1131,58 @@ function WordSearch() {
         </p>
       </div>
 
-      {/* Celebration Banner */}
+      {/* Enhanced Celebration Banner */}
       {showCelebration && (
-        <div className="backdrop-blur-xl rounded-2xl p-6 mb-6 text-center shadow-2xl border-2 animate-bounce" style={{
-          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.3) 100%)',
-          borderColor: 'rgba(34, 197, 94, 0.5)'
+        <div className="backdrop-blur-xl rounded-3xl p-8 mb-6 text-center shadow-2xl border-4 relative overflow-hidden" style={{
+          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.4) 0%, rgba(16, 185, 129, 0.4) 50%, rgba(6, 182, 212, 0.4) 100%)',
+          borderColor: 'rgba(34, 197, 94, 0.7)',
+          animation: 'bounce 0.5s ease-in-out 3'
         }}>
-          <div className="flex items-center justify-center gap-3">
-            <Trophy className="w-8 h-8 text-yellow-300" />
-            <h3 className="text-3xl font-bold text-white">Amazing! All Words Found! 🎉</h3>
-            <Trophy className="w-8 h-8 text-yellow-300" />
+          {/* Animated Background Effect */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute animate-ping"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  backgroundColor: ['#FFD1B3', '#FF9A5A', '#FF7A32'][i % 3],
+                  animationDuration: `${1 + Math.random()}s`,
+                  animationDelay: `${Math.random() * 0.5}s`
+                }}
+              />
+            ))}
+          </div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Trophy className="w-12 h-12 text-yellow-300 animate-bounce" />
+              <h3 className="text-4xl font-black text-white drop-shadow-lg">
+                That Slaps! All Words Found! 🔥
+              </h3>
+              <Trophy className="w-12 h-12 text-yellow-300 animate-bounce" />
+            </div>
+            
+            <div className="flex items-center justify-center gap-6 mt-4">
+              <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                <div className="text-3xl font-bold text-white">{puzzle.words.length}</div>
+                <div className="text-sm text-white/80">Words Found</div>
+              </div>
+            </div>
+            
+            <p className="text-xl font-bold text-white mt-4 drop-shadow">
+              You've got hella skills! Keep going! 💪
+            </p>
           </div>
         </div>
       )}
+
+      {/* Ad Placement - After Word Search Completion */}
+      {isComplete && <AdBanner slot="wordsearch-completion" className="animate-fadeIn" />}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Word Search Grid */}
@@ -1205,16 +1351,35 @@ function WordScramble() {
     };
   }, [isActive, timeLeft]);
 
-  const scrambleWord = (word) => {
+  const scrambleWord = (word, attempt = 0) => {
+    const MAX_ATTEMPTS = 10;
+    
+    // Prevent infinite recursion
+    if (attempt >= MAX_ATTEMPTS) {
+      // For very short words that can't be scrambled differently, just return scrambled version
+      return word.split('').reverse().join('');
+    }
+    
     const arr = word.split('');
-    // Fisher-Yates shuffle
+    
+    // For 3-letter words, use simple swap to avoid infinite loops
+    if (arr.length === 3) {
+      // Swap first and last letter
+      [arr[0], arr[2]] = [arr[2], arr[0]];
+      const scrambled = arr.join('');
+      return scrambled === word ? word.split('').reverse().join('') : scrambled;
+    }
+    
+    // Fisher-Yates shuffle for longer words
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
+    
     const scrambled = arr.join('');
-    // Make sure it's actually scrambled
-    return scrambled === word ? scrambleWord(word) : scrambled;
+    
+    // Make sure it's actually scrambled, retry with limit
+    return scrambled === word ? scrambleWord(word, attempt + 1) : scrambled;
   };
 
   const startNewRound = () => {
@@ -1538,6 +1703,9 @@ function HomePage({ setView }) {
         </p>
       </div>
 
+      {/* Ad Placement - Top of Home Page */}
+      <AdBanner slot="home-top-banner" className="animate-fadeIn" />
+
       {/* Feature Cards Grid */}
       <div className="grid md:grid-cols-2 gap-6">
         {[
@@ -1575,6 +1743,9 @@ function HomePage({ setView }) {
           );
         })}
       </div>
+
+      {/* Ad Placement - Between Games and About */}
+      <AdBanner slot="home-middle-banner" className="animate-fadeIn" />
 
       {/* About Section */}
       <div 
@@ -1640,7 +1811,15 @@ class PuzzleCache {
   }
 
   // Crossword generation (optimized)
-  generateCrossword() {
+  generateCrossword(retryCount = 0) {
+    const MAX_RETRIES = 3;
+    
+    // Prevent infinite recursion
+    if (retryCount >= MAX_RETRIES) {
+      console.warn('Max retries reached, generating puzzle with available words');
+      // Return puzzle with whatever words were placed
+    }
+    
     const availableWords = [...bayAreaWords]
       .filter(w => {
         const cleanWord = w.word.toUpperCase().replace(/\s/g, '');
@@ -1747,8 +1926,9 @@ class PuzzleCache {
       if (placed) wordsPlaced++;
     }
 
+    // Retry with different words if not enough
     if (words.length < 17) {
-      return this.generateCrossword();
+      return this.generateCrossword(retryCount + 1);
     }
 
     return { grid, words, clues };
